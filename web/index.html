@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizForge — AI Study Notes to Quiz Generator</title>
+    <meta name="description" content="Paste your study notes, get smart MCQs and flashcards powered by NLP and AI.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ── Header ────────────────────────────────────────────── -->
+    <header class="header" role="banner">
+        <div class="header__inner">
+            <div class="logo" aria-label="QuizForge">
+                <span class="logo__icon" aria-hidden="true">⚡</span>
+                <span class="logo__text gradient-text">QuizForge</span>
+            </div>
+            <nav class="header__actions" aria-label="Header actions">
+                <span class="badge badge--mode" id="modeBadge" aria-live="polite" hidden>
+                    <span class="badge__dot"></span>
+                    <span class="badge__text">Offline Mode</span>
+                </span>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+                    <span class="theme-toggle__icon" aria-hidden="true">🌙</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ── Main Content ──────────────────────────────────────── -->
+    <main id="main-content">
+        <!-- Hero -->
+        <section class="hero" aria-labelledby="hero-heading">
+            <h1 id="hero-heading" class="hero__title">
+                Paste your notes.<br>
+                <span class="gradient-text">Get smarter questions.</span>
+            </h1>
+            <p class="hero__sub">NLP-powered text analysis picks what matters. AI turns it into quizzes.</p>
+        </section>
+
+        <!-- ── Input Section ─────────────────────────────────── -->
+        <section class="section" id="inputSection" aria-labelledby="input-heading">
+            <h2 id="input-heading" class="sr-only">Input your study notes</h2>
+            <div class="card card--glass input-card">
+                <div class="input-card__header">
+                    <label for="notesInput" class="input-card__label">Study Notes</label>
+                    <div class="input-card__actions">
+                        <button class="btn btn--ghost btn--sm" id="sampleBtn" type="button">
+                            📄 Load Sample Notes
+                        </button>
+                        <span class="word-counter" id="wordCounter" aria-live="polite">0 words</span>
+                    </div>
+                </div>
+
+                <div class="textarea-wrap" id="dropZone">
+                    <textarea id="notesInput" class="textarea" placeholder="Paste your study notes here, or drag & drop a .txt file..." rows="10" maxlength="102400" aria-describedby="textarea-help"></textarea>
+                    <div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+                        <span class="drop-overlay__icon">📥</span>
+                        <span>Drop .txt file here</span>
+                    </div>
+                </div>
+                <p id="textarea-help" class="sr-only">Enter or paste your study notes. You can also drag and drop a .txt file.</p>
+
+                <!-- Controls -->
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="numQuestions" class="control-label">
+                            Questions: <strong id="numQuestionsValue">8</strong>
+                        </label>
+                        <input type="range" id="numQuestions" class="slider" min="4" max="15" value="8" aria-label="Number of questions">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" id="difficultyLabel">Difficulty</label>
+                        <div class="segmented" role="radiogroup" aria-labelledby="difficultyLabel">
+                            <button class="segmented__btn" role="radio" aria-checked="false" data-value="easy">Easy</button>
+                            <button class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-value="medium">Medium</button>
+                            <button class="segmented__btn" role="radio" aria-checked="false" data-value="hard">Hard</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" id="modeLabel">Mode</label>
+                        <div class="segmented" role="radiogroup" aria-labelledby="modeLabel">
+                            <button class="segmented__btn" role="radio" aria-checked="false" data-value="mcq">MCQ</button>
+                            <button class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-value="both">Both</button>
+                            <button class="segmented__btn" role="radio" aria-checked="false" data-value="flashcards">Flashcards</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn--primary btn--glow btn--lg" id="generateBtn" type="button">
+                    <span class="btn__text">⚡ Generate Quiz</span>
+                    <span class="btn__loader" hidden aria-hidden="true">
+                        <span class="spinner"></span>
+                        <span class="btn__status" id="statusText">Analyzing...</span>
+                    </span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ── Insights Section ──────────────────────────────── -->
+        <section class="section" id="insightsSection" hidden aria-labelledby="insights-heading">
+            <h2 id="insights-heading" class="section__title gradient-text">📊 Text Insights</h2>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card card card--glass">
+                    <div class="stat-card__value" data-target="0" id="statWords">0</div>
+                    <div class="stat-card__label">Words</div>
+                </div>
+                <div class="stat-card card card--glass">
+                    <div class="stat-card__value" data-target="0" id="statSentences">0</div>
+                    <div class="stat-card__label">Sentences</div>
+                </div>
+                <div class="stat-card card card--glass">
+                    <div class="stat-card__value" data-target="0" id="statChunks">0</div>
+                    <div class="stat-card__label">Chunks</div>
+                </div>
+                <div class="stat-card card card--glass">
+                    <div class="stat-card__value" data-target="0" id="statReduction">0</div>
+                    <div class="stat-card__label">% Reduced</div>
+                </div>
+            </div>
+
+            <!-- Key Terms -->
+            <div class="card card--glass" id="keyTermsCard">
+                <h3 class="card__title">🔑 Key Terms</h3>
+                <div class="chips" id="keyTermsChips" role="list" aria-label="Key terms extracted from your notes"></div>
+            </div>
+
+            <!-- Importance Heatmap -->
+            <div class="card card--glass" id="heatmapCard">
+                <h3 class="card__title">🌡️ Importance Heatmap</h3>
+                <p class="card__desc">Brighter sentences scored higher in the analysis.</p>
+                <div class="heatmap" id="heatmapContent" role="list" aria-label="Sentence importance heatmap"></div>
+            </div>
+        </section>
+
+        <!-- ── Quiz Section ──────────────────────────────────── -->
+        <section class="section" id="quizSection" hidden aria-labelledby="quiz-heading">
+            <h2 id="quiz-heading" class="section__title gradient-text">🧠 Quiz Time</h2>
+
+            <!-- Progress -->
+            <div class="quiz-progress" id="quizProgress">
+                <div class="progress-bar">
+                    <div class="progress-bar__fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="quiz-meta">
+                    <span id="questionCounter">Question 1 / 8</span>
+                    <span class="quiz-score">
+                        Score: <strong id="quizScore">0</strong> |
+                        Streak: <strong id="quizStreak">0</strong> 🔥
+                    </span>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="card card--glass question-card" id="questionCard">
+                <div class="question-card__number" id="questionNumber">Q1</div>
+                <p class="question-card__text" id="questionText"></p>
+                <div class="options" id="optionsList" role="radiogroup" aria-label="Answer options"></div>
+                <div class="explanation" id="explanationBox" hidden>
+                    <p id="explanationText"></p>
+                </div>
+                <button class="btn btn--primary btn--lg" id="nextBtn" hidden type="button">
+                    Next Question →
+                </button>
+            </div>
+            <p class="keyboard-hint" aria-hidden="true">💡 Press 1-4 to answer, Enter for next</p>
+        </section>
+
+        <!-- ── Results Section ───────────────────────────────── -->
+        <section class="section" id="resultsSection" hidden aria-labelledby="results-heading">
+            <h2 id="results-heading" class="section__title gradient-text">🎉 Results</h2>
+
+            <div class="card card--glass results-card">
+                <div class="score-ring-wrap">
+                    <svg class="score-ring" viewBox="0 0 120 120" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#7c3aed"></stop>
+                                <stop offset="100%" stop-color="#06b6d4"></stop>
+                            </linearGradient>
+                        </defs>
+                        <circle class="score-ring__bg" cx="60" cy="60" r="52"></circle>
+                        <circle class="score-ring__fill" id="scoreRingFill" cx="60" cy="60" r="52"></circle>
+                    </svg>
+                    <div class="score-ring__label" id="scoreRingLabel">0%</div>
+                </div>
+                <p class="results-card__message" id="resultsMessage"></p>
+
+                <div class="results-actions">
+                    <button class="btn btn--primary" id="retryBtn" type="button">🔄 Retry All</button>
+                    <button class="btn btn--secondary" id="retryMissedBtn" type="button" hidden>🎯 Retry Missed</button>
+                    <button class="btn btn--ghost" id="newNotesBtn" type="button">📝 New Notes</button>
+                </div>
+            </div>
+
+            <!-- Missed Questions -->
+            <div class="card card--glass" id="missedCard" hidden>
+                <h3 class="card__title">📋 Review Missed Questions</h3>
+                <div id="missedList"></div>
+            </div>
+        </section>
+
+        <!-- ── Flashcards Section ────────────────────────────── -->
+        <section class="section" id="flashcardsSection" hidden aria-labelledby="fc-heading">
+            <h2 id="fc-heading" class="section__title gradient-text">🃏 Flashcards</h2>
+
+            <div class="fc-progress">
+                <span id="fcCounter">Card 1 / 8</span>
+                <span class="fc-mastered">Mastered: <strong id="fcMastered">0</strong></span>
+            </div>
+
+            <div class="fc-container" id="fcContainer">
+                <div class="fc-card" id="fcCard" tabindex="0" role="button" aria-label="Click to flip card">
+                    <div class="fc-card__inner" id="fcCardInner">
+                        <div class="fc-card__front">
+                            <p id="fcFront"></p>
+                        </div>
+                        <div class="fc-card__back">
+                            <p id="fcBack"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fc-actions">
+                <button class="btn btn--danger btn--sm" id="fcReviewBtn" type="button">🔄 Review Again</button>
+                <button class="btn btn--success btn--sm" id="fcGotItBtn" type="button">✅ Got It</button>
+            </div>
+            <div class="fc-nav">
+                <button class="btn btn--ghost btn--sm" id="fcPrevBtn" type="button" aria-label="Previous card">← Prev</button>
+                <button class="btn btn--ghost btn--sm" id="fcNextBtn" type="button" aria-label="Next card">Next →</button>
+            </div>
+        </section>
+
+        <!-- ── Export Actions ────────────────────────────────── -->
+        <section class="section export-section" id="exportSection" hidden>
+            <button class="btn btn--ghost btn--sm" id="downloadJsonBtn" type="button">📥 Download JSON</button>
+            <button class="btn btn--ghost btn--sm" id="printBtn" type="button">🖨️ Print / Save PDF</button>
+        </section>
+    </main>
+
+    <!-- ── Toast Container ───────────────────────────────────── -->
+    <div class="toast-container" id="toastContainer" aria-live="assertive" role="status"></div>
+
+    <!-- ── Confetti Canvas ───────────────────────────────────── -->
+    <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
+    <!-- ── Footer ────────────────────────────────────────────── -->
+    <footer class="footer" role="contentinfo">
+        <p>Built with C, TF-IDF, and ☕ &mdash; <a href="https://github.com/PranavNayee/quizforge" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
